@@ -52,8 +52,8 @@ def tokenize(source: str) -> list[Token]:
             while i < len(source) and source[i].isalpha():
                 i += 1
             sseq = source[l:i]
-            if sseq in keywords:
-                ans.append(Token(keywords[sseq], ""))
+            if sseq.upper() in keywords:
+                ans.append(Token(keywords[sseq.upper()], ""))
             else:
                 ans.append(Token(TokenType.IDENTIFIER, sseq))
         elif c == '"':
