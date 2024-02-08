@@ -40,7 +40,6 @@ class Parser:
     def __init__(self, source: str):
         self.i = 0
         self.tokens = tokenize(source)
-        __import__('pprint').pprint(self.tokens)
 
     def cur(self) -> Token:
         return self.tokens[self.i]
