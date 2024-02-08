@@ -8,7 +8,6 @@ class TokenType(enum.Enum):
     IDENTIFIER = enum.auto()
     LCOLON = enum.auto()
     RCOLON = enum.auto()
-    TEXT = enum.auto()
     INSERT = enum.auto()
     INTO = enum.auto()
     VALUES = enum.auto()
@@ -23,9 +22,9 @@ class TokenType(enum.Enum):
 keywords = {
     "CREATE": TokenType.CREATE,
     "TABLE": TokenType.TABLE,
-    "TEXT": TokenType.TEXT,
     "INSERT": TokenType.INSERT,
     "INTO": TokenType.INTO,
+    "VALUES": TokenType.VALUES,
     "SELECT": TokenType.SELECT,
     "FROM": TokenType.FROM,
 }
@@ -40,7 +39,7 @@ class TokenizerError(Exception):
     pass
 
 
-def tokenize(source: str) -> list[str]:
+def tokenize(source: str) -> list[Token]:
     i = 0
     ans = []
     while i < len(source):
@@ -77,6 +76,9 @@ def tokenize(source: str) -> list[str]:
         elif c == ';':
             ans.append(Token(TokenType.SEMICOLON, ""))
             i += 1
+        elif c == ',':
+            ans.append(Token(TokenType.COMMA, ""))
+            i += 1
         else:
             raise TokenizerError(f"unexpected symbol {c} at {i}")
 
@@ -84,15 +86,18 @@ def tokenize(source: str) -> list[str]:
 
 
 def test_create():
-    line = "CREATE TABLE user (name TEXT);"
+    line = "CREATE TABLE user (firstname TEXT, secondname TEXT);"
     tokens = tokenize(line)
     expected_tokens = [
         Token(TokenType.CREATE, ""),
         Token(TokenType.TABLE, ""),
         Token(TokenType.IDENTIFIER, "user"),
         Token(TokenType.LCOLON, ""),
-        Token(TokenType.IDENTIFIER, "name"),
-        Token(TokenType.TEXT, ""),
+        Token(TokenType.IDENTIFIER, "firstname"),
+        Token(TokenType.IDENTIFIER, "TEXT"),
+        Token(TokenType.COMMA, ""),
+        Token(TokenType.IDENTIFIER, "secondname"),
+        Token(TokenType.IDENTIFIER, "TEXT"),
         Token(TokenType.RCOLON, ""),
         Token(TokenType.SEMICOLON, ""),
     ]
@@ -101,14 +106,23 @@ def test_create():
 
 
 def test_insert():
-    line = 'INSERT INTO user ("alisher");'
+    line = 'INSERT INTO user VALUES ("alisher", "zhubanyshev"), ("john", "doe");'
     tokens = tokenize(line)
     expected_tokens = [
         Token(TokenType.INSERT, ""),
         Token(TokenType.INTO, ""),
         Token(TokenType.IDENTIFIER, "user"),
+        Token(TokenType.VALUES, ""),
         Token(TokenType.LCOLON, ""),
         Token(TokenType.STRING_LITERAL, "alisher"),
+        Token(TokenType.COMMA, ""),
+        Token(TokenType.STRING_LITERAL, "zhubanyshev"),
+        Token(TokenType.RCOLON, ""),
+        Token(TokenType.COMMA, ""),
+        Token(TokenType.LCOLON, ""),
+        Token(TokenType.STRING_LITERAL, "john"),
+        Token(TokenType.COMMA, ""),
+        Token(TokenType.STRING_LITERAL, "doe"),
         Token(TokenType.RCOLON, ""),
         Token(TokenType.SEMICOLON, ""),
     ]
