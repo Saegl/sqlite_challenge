@@ -56,10 +56,11 @@ def tokenize(source: str) -> list[Token]:
                 ans.append(Token(keywords[sseq.upper()], ""))
             else:
                 ans.append(Token(TokenType.IDENTIFIER, sseq))
-        elif c == '"':
+        elif c in ['"', "'"]:
+            quote_type = c
             i += 1
             l = i
-            while i < len(source) and source[i] != '"':
+            while i < len(source) and source[i] != quote_type:
                 i += 1
             inner = source[l:i]
             i += 1
