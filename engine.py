@@ -32,10 +32,20 @@ class Engine:
         if stmt.tablename not in self.tables:
             print(f"OperationalError (SQLITE_ERROR): no such table: {stmt.tablename}")
             return
+
+        table = self.tables[stmt.tablename]
+
+        column_ids = []
+        for rcol in stmt.result_columns:
+            if rcol == '*':
+                column_ids.extend(range(len(table.columns)))
+            else:
+                column_ids.append(table.columns.index(rcol))
         
         output = []
         for row in self.tables[stmt.tablename].data:
-            output.append(tuple(row))
+            row = tuple(row[c_id] for c_id in column_ids)
+            output.append(row)
         return output
 
     def execute(self, cmd: str) -> list:

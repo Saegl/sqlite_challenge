@@ -35,4 +35,5 @@ def test1():
     sm.same("INSERT INTO user VALUES ('alisher', 'zhuban'), ('john', 'doe')")
     sm.same("SELECT * FROM user")
     sm.same("SELECT firstname, secondname FROM user")
+    sm.same("SELECT *, firstname, * FROM user")
 
