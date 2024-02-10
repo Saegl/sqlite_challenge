@@ -31,6 +31,8 @@ class InsertStmt(Stmt):
 @dataclasses.dataclass
 class SelectStmt(Stmt):
     tablename: str
+    result_columns: list[str]
+
 
 class ParserError(Exception):
     pass
@@ -114,12 +116,27 @@ class Parser:
 
         return InsertStmt(tablename, values)
 
+    def result_column(self) -> str:
+        if self.cur().ttype == TokenType.STAR:
+            self.expect(TokenType.STAR)
+            return "*"
+        else:
+            column_name = self.expect_ident()
+            return column_name
+
     def select_stmt(self) -> SelectStmt:
         self.expect(TokenType.SELECT)
-        self.expect(TokenType.STAR)
+        cols = []
+        col = self.result_column()
+        cols.append(col)
+        while self.cur().ttype != TokenType.FROM:
+            self.expect(TokenType.COMMA)
+            col = self.result_column()
+            cols.append(col)
+
         self.expect(TokenType.FROM)
         tablename = self.expect_ident()
-        return SelectStmt(tablename)
+        return SelectStmt(tablename, cols)
 
     def sql_stmt(self) -> Stmt:
         if self.cur().ttype == TokenType.CREATE:
@@ -181,7 +198,15 @@ def test_select():
     line = 'SELECT * FROM user;'
     stmts = parse(line)
     expected_stmts = [
-        SelectStmt("user")
+        SelectStmt("user", ["*"])
+    ]
+    assert stmts == expected_stmts
+
+def test_select_cols():
+    line = 'SELECT title, director FROM movies;'
+    stmts = parse(line)
+    expected_stmts = [
+        SelectStmt("movies", ["title", "director"])
     ]
     assert stmts == expected_stmts
 
