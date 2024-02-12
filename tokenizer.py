@@ -18,6 +18,8 @@ class TokenType(enum.Enum):
     AND = enum.auto()
     NOT = enum.auto()
     IN = enum.auto()
+    DISTINCT = enum.auto()
+    ALL = enum.auto()
     
     IDENTIFIER = enum.auto()
     STRING_LITERAL = enum.auto()
@@ -57,6 +59,8 @@ keywords = {
     "AND": TT.AND,
     "NOT": TT.NOT,
     "IN": TT.IN,
+    "DISTINCT": TT.DISTINCT,
+    "ALL": TT.ALL,
 }
 
 @dataclasses.dataclass

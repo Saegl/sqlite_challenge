@@ -158,6 +158,9 @@ class Engine:
             else:
                 outputrow = tuple(row[c_id].val for c_id in column_ids)
                 output.append(outputrow)
+
+        if stmt.distinct:
+            output = list(set(output))
         return output
 
     def execute(self, cmd: str) -> list:

@@ -66,3 +66,11 @@ def test_strings():
     sm.same("SELECT * FROM s WHERE t == 'ali'")
     sm.same("SELECT * FROM s WHERE t LIKE 'ali%'")
     sm.same("SELECT * FROM s WHERE t IN ('ali', 'aset')")
+
+def test_duplicates():
+    sm = SameOutput()
+    sm.same("CREATE TABLE nums(x INTEGER)")
+    sm.same("INSERT INTO nums VALUES (1), (1), (1)")
+    sm.same("SELECT x FROM nums WHERE x == 1")
+    sm.same("SELECT ALL x FROM nums WHERE x == 1")
+    sm.same("SELECT DISTINCT x FROM nums WHERE x == 1")

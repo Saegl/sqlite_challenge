@@ -77,6 +77,7 @@ class SelectStmt(Stmt):
     tablename: str | None
     result_columns: list[str]
     where: Expr | None
+    distinct: bool
 
 
 class ParserError(Exception):
@@ -281,6 +282,14 @@ class Parser:
 
     def select_stmt(self) -> SelectStmt:
         self.expect(TokenType.SELECT)
+
+        distinct = False
+        if self.cur().ttype == TT.DISTINCT:
+            self.skip()
+            distinct = True
+        elif self.cur().ttype == TT.ALL:
+            self.skip()
+
         cols = []
         col = self.result_column()
         cols.append(col)
@@ -299,7 +308,7 @@ class Parser:
             self.expect(TokenType.WHERE)
             where = self.expr()
 
-        return SelectStmt(tablename, cols, where)
+        return SelectStmt(tablename, cols, where, distinct)
 
     def sql_stmt(self) -> Stmt:
         stmt: Stmt
