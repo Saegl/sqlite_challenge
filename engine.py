@@ -59,11 +59,14 @@ class Engine:
                 return context[node.ident]
             case parser.BinaryOperator(lhs, _, rhs):
                 return IntegerValue(self.expr(lhs, context).val == self.expr(rhs, context).val)
-            case parser.Between(expr, lower, upper):
+            case parser.Between(expr, lower, upper, isnot):
                 exprval = self.expr(expr, context).val
                 lowerval = self.expr(lower, context).val
                 upperval = self.expr(upper, context).val
-                return IntegerValue(lowerval <= exprval <= upperval)
+                output = lowerval <= exprval <= upperval
+                if isnot:
+                    output = not output
+                return IntegerValue(output)
             case _:
                 raise EngineError(f"Not implemented expr {node}")
 

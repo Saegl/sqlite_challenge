@@ -44,4 +44,5 @@ def test2():
     sm.same("INSERT INTO user VALUES ('alisher', 22), ('john', 21)")
     sm.same("SELECT name FROM user WHERE age = 22")
     sm.same("SELECT name FROM user WHERE age BETWEEN 18 AND 21")
+    sm.same("SELECT name FROM user WHERE age NOT BETWEEN 18 AND 21")
 

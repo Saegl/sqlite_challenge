@@ -14,6 +14,7 @@ class TokenType(enum.Enum):
     WHERE = enum.auto()
     BETWEEN = enum.auto()
     AND = enum.auto()
+    NOT = enum.auto()
     
     IDENTIFIER = enum.auto()
     STRING_LITERAL = enum.auto()
@@ -40,6 +41,7 @@ keywords = {
     "WHERE": TokenType.WHERE,
     "BETWEEN": TT.BETWEEN,
     "AND": TT.AND,
+    "NOT": TT.NOT,
 }
 
 @dataclasses.dataclass

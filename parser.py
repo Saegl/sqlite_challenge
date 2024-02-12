@@ -32,6 +32,7 @@ class Between(Expr):
     expr: Expr
     lower: Expr
     upper: Expr
+    isnot: bool
 
 @dataclasses.dataclass
 class ColumnDef:
@@ -126,12 +127,17 @@ class Parser:
             self.skip()
             rhs = self.value()
             return BinaryOperator(lhs, TT.EQUAL, rhs)
-        if self.cur().ttype == TT.BETWEEN:
-            self.skip()
+        if self.cur().ttype in (TT.NOT, TT.BETWEEN):
+            isnot = False
+            if self.cur().ttype == TT.NOT:
+                isnot = True
+                self.skip()
+            
+            self.expect(TT.BETWEEN)
             lower = self.value()
             self.expect(TT.AND)
             upper = self.value()
-            return Between(lhs, lower, upper)
+            return Between(lhs, lower, upper, isnot)
         
         return lhs
 
