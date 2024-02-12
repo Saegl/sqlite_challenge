@@ -141,8 +141,26 @@ class Parser:
         
         return lhs
 
+    def and_expr(self) -> Expr:
+        lhs = self.cmp_expr()
+        while self.cur().ttype == TT.AND:
+            self.skip()
+            rhs = self.cmp_expr()
+            lhs = BinaryOperator(lhs, TT.AND, rhs)
+
+        return lhs
+
+    def or_expr(self) -> Expr:
+        lhs = self.and_expr()
+        while self.cur().ttype == TT.OR:
+            self.skip()
+            rhs = self.and_expr()
+            lhs = BinaryOperator(lhs, TT.OR, rhs)
+
+        return lhs
+
     def expr(self) -> Expr:
-        return self.cmp_expr()
+        return self.or_expr()
 
     def row(self) -> Row:
         self.expect(TokenType.LCOLON)

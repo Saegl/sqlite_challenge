@@ -46,3 +46,9 @@ def test2():
     sm.same("SELECT name FROM user WHERE age BETWEEN 18 AND 21")
     sm.same("SELECT name FROM user WHERE age NOT BETWEEN 18 AND 21")
 
+def test_nums():
+    sm = SameOutput()
+    sm.same("CREATE TABLE nums(x INTEGER)")
+    sm.same("INSERT INTO nums VALUES (1), (2), (3), (4), (5)")
+    sm.same("SELECT x FROM nums WHERE x == 1 OR x == 2")
+    sm.same("SELECT x FROM nums WHERE x == 3 AND x == 3")

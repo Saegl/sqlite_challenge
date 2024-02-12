@@ -13,6 +13,7 @@ class TokenType(enum.Enum):
     FROM = enum.auto()
     WHERE = enum.auto()
     BETWEEN = enum.auto()
+    OR = enum.auto()
     AND = enum.auto()
     NOT = enum.auto()
     
@@ -40,6 +41,7 @@ keywords = {
     "FROM": TokenType.FROM,
     "WHERE": TokenType.WHERE,
     "BETWEEN": TT.BETWEEN,
+    "OR": TT.OR,
     "AND": TT.AND,
     "NOT": TT.NOT,
 }
@@ -104,6 +106,8 @@ def tokenize(source: str) -> list[Token]:
         elif c == '=':
             ans.append(Token(TokenType.EQUAL, ""))
             i += 1
+            if source[i] == '=':
+                i += 1
         else:
             raise TokenizerError(f"unexpected symbol {c} at {i}")
 

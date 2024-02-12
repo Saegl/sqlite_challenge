@@ -2,6 +2,7 @@ import abc
 from dataclasses import dataclass
 from typing import Any
 import parser
+from tokenizer import TT
 
 
 class EngineError(Exception):
@@ -57,8 +58,19 @@ class Engine:
                 return IntegerValue(val)
             case parser.BindParameter(val):
                 return context[node.ident]
-            case parser.BinaryOperator(lhs, _, rhs):
-                return IntegerValue(self.expr(lhs, context).val == self.expr(rhs, context).val)
+            case parser.BinaryOperator(lhs, op, rhs):
+                lhsval = self.expr(lhs, context).val
+                rhsval = self.expr(rhs, context).val
+
+                if op == TT.EQUAL:
+                    return IntegerValue(lhsval == rhsval)
+                elif op == TT.OR:
+                    return IntegerValue(lhsval == 1 or rhsval == 1)
+                elif op == TT.AND:
+                    return IntegerValue(lhsval == 1 and rhsval == 1)
+                else:
+                    raise EngineError(f"{op} operator is not implemented")
+
             case parser.Between(expr, lower, upper, isnot):
                 exprval = self.expr(expr, context).val
                 lowerval = self.expr(lower, context).val
