@@ -58,6 +58,12 @@ class Engine:
                 return IntegerValue(val)
             case parser.BindParameter(val):
                 return context[node.ident]
+            case parser.UnaryOperator(expr, op):
+                expr = self.expr(expr, context)
+                if op == TT.NOT:
+                    return IntegerValue(not expr.val)
+                else:
+                    raise EngineError(f"Unary op {op} is not implemented")
             case parser.BinaryOperator(lhs, op, rhs):
                 lhsval = self.expr(lhs, context).val
                 rhsval = self.expr(rhs, context).val

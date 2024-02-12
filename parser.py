@@ -22,6 +22,11 @@ class BindParameter(Expr):
     ident: str
 
 @dataclasses.dataclass
+class UnaryOperator(Expr):
+    expr: Expr
+    op: TT
+
+@dataclasses.dataclass
 class BinaryOperator(Expr):
     lhs: Expr
     op: TT
@@ -141,11 +146,18 @@ class Parser:
         
         return lhs
 
+    def not_expr(self) -> Expr:
+        if self.cur().ttype == TT.NOT:
+            self.skip()
+            return UnaryOperator(self.cmp_expr(), TT.NOT)
+
+        return self.cmp_expr()
+
     def and_expr(self) -> Expr:
-        lhs = self.cmp_expr()
+        lhs = self.not_expr()
         while self.cur().ttype == TT.AND:
             self.skip()
-            rhs = self.cmp_expr()
+            rhs = self.not_expr()
             lhs = BinaryOperator(lhs, TT.AND, rhs)
 
         return lhs

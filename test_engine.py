@@ -51,4 +51,4 @@ def test_nums():
     sm.same("CREATE TABLE nums(x INTEGER)")
     sm.same("INSERT INTO nums VALUES (1), (2), (3), (4), (5)")
     sm.same("SELECT x FROM nums WHERE x == 1 OR x == 2")
-    sm.same("SELECT x FROM nums WHERE x == 3 AND x == 3")
+    sm.same("SELECT x FROM nums WHERE NOT x == 3 AND NOT x == 2")
