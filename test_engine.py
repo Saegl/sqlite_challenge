@@ -53,4 +53,7 @@ def test_nums():
     sm.same("SELECT x FROM nums WHERE x == 1 OR x == 2")
     sm.same("SELECT x FROM nums WHERE NOT x == 3 AND NOT x == 2")
     sm.same("SELECT x FROM nums WHERE x != 1 AND x <> 2")
+    sm.same("SELECT x FROM nums WHERE x <= 2 OR x >= 4")
+    sm.same("SELECT x from nums WHERE x < 3")
+    sm.same("SELECT x from nums WHERE x > 3")
 

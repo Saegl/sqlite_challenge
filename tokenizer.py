@@ -31,6 +31,12 @@ class TokenType(enum.Enum):
     EQUAL = enum.auto()
     NOT_EQUAL = enum.auto()
 
+    # order op
+    LT = enum.auto()
+    LE = enum.auto()
+    GT = enum.auto()
+    GE = enum.auto()
+
 TT = TokenType
 
 
@@ -116,8 +122,20 @@ def tokenize(source: str) -> list[Token]:
                 i += 1
                 ans.append(Token(TT.NOT_EQUAL, ""))
                 continue
+            elif source[i] == '=':
+                i += 1
+                ans.append(Token(TT.LE, ""))
+                continue
             
-            raise TokenizerError
+            ans.append(Token(TT.LT, ""))
+        elif c == '>':
+            i += 1
+            if source[i] == '=':
+                i += 1
+                ans.append(Token(TT.GE, ""))
+                continue
+
+            ans.append(Token(TT.GT, ""))
         elif c == '!':
             i += 1
             if source[i] == '=':

@@ -72,6 +72,14 @@ class Engine:
                     return IntegerValue(lhsval == rhsval)
                 elif op == TT.NOT_EQUAL:
                     return IntegerValue(lhsval != rhsval)
+                elif op == TT.LT:
+                    return IntegerValue(lhsval < rhsval)
+                elif op == TT.LE:
+                    return IntegerValue(lhsval <= rhsval)
+                elif op == TT.GT:
+                    return IntegerValue(lhsval > rhsval)
+                elif op == TT.GE:
+                    return IntegerValue(lhsval >= rhsval)
                 elif op == TT.OR:
                     return IntegerValue(lhsval == 1 or rhsval == 1)
                 elif op == TT.AND:

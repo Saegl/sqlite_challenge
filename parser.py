@@ -126,12 +126,22 @@ class Parser:
         else:
             raise ParserError(str(self.cur().ttype))
 
-    def cmp_expr(self) -> Expr:
+    def order_expr(self) -> Expr:
         lhs = self.value()
-        if self.cur().ttype in (TT.EQUAL, TT.NOT_EQUAL):
+        if self.cur().ttype in (TT.LT, TT.LE, TT.GT, TT.GE):
             op = self.cur().ttype
             self.skip()
             rhs = self.value()
+            return BinaryOperator(lhs, op, rhs)
+        
+        return lhs
+
+    def cmp_expr(self) -> Expr:
+        lhs = self.order_expr()
+        if self.cur().ttype in (TT.EQUAL, TT.NOT_EQUAL):
+            op = self.cur().ttype
+            self.skip()
+            rhs = self.order_expr()
             return BinaryOperator(lhs, op, rhs)
         if self.cur().ttype in (TT.NOT, TT.BETWEEN):
             isnot = False
@@ -140,9 +150,9 @@ class Parser:
                 self.skip()
             
             self.expect(TT.BETWEEN)
-            lower = self.value()
+            lower = self.order_expr()
             self.expect(TT.AND)
-            upper = self.value()
+            upper = self.order_expr()
             return Between(lhs, lower, upper, isnot)
         
         return lhs
