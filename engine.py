@@ -58,6 +58,13 @@ class Engine:
                 return IntegerValue(val)
             case parser.BindParameter(val):
                 return context[node.ident]
+            case parser.InExpr(element, container, isnot):
+                elementval = self.expr(element, context).val
+                containerval = [self.expr(e, context).val for e in container]
+                if isnot:
+                    return IntegerValue(elementval not in containerval)
+                else:
+                    return IntegerValue(elementval in containerval)
             case parser.UnaryOperator(expr, op):
                 expr = self.expr(expr, context)
                 if op == TT.NOT:

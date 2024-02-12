@@ -22,6 +22,12 @@ class BindParameter(Expr):
     ident: str
 
 @dataclasses.dataclass
+class InExpr(Expr):
+    element: Expr
+    container: list[Expr]
+    isnot: bool
+
+@dataclasses.dataclass
 class UnaryOperator(Expr):
     expr: Expr
     op: TT
@@ -143,17 +149,32 @@ class Parser:
             self.skip()
             rhs = self.order_expr()
             return BinaryOperator(lhs, op, rhs)
-        if self.cur().ttype in (TT.NOT, TT.BETWEEN):
-            isnot = False
-            if self.cur().ttype == TT.NOT:
-                isnot = True
-                self.skip()
-            
-            self.expect(TT.BETWEEN)
+
+        isnot = False
+        if self.cur().ttype == TT.NOT:
+            isnot = True
+            self.skip()
+        
+        if self.cur().ttype == TT.BETWEEN:
+            self.skip()
             lower = self.order_expr()
             self.expect(TT.AND)
             upper = self.order_expr()
             return Between(lhs, lower, upper, isnot)
+
+        if self.cur().ttype == TT.IN:
+            self.skip()
+            self.expect(TT.LCOLON)
+
+            exprs: list[Expr] = []
+            exprs.append(self.expr())
+
+            while self.cur().ttype == TT.COMMA:
+                self.skip()
+                exprs.append(self.expr())
+
+            self.expect(TT.RCOLON)
+            return InExpr(lhs, exprs, isnot)
         
         return lhs
 

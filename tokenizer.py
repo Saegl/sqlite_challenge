@@ -16,6 +16,7 @@ class TokenType(enum.Enum):
     OR = enum.auto()
     AND = enum.auto()
     NOT = enum.auto()
+    IN = enum.auto()
     
     IDENTIFIER = enum.auto()
     STRING_LITERAL = enum.auto()
@@ -53,6 +54,7 @@ keywords = {
     "OR": TT.OR,
     "AND": TT.AND,
     "NOT": TT.NOT,
+    "IN": TT.IN,
 }
 
 @dataclasses.dataclass
