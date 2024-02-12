@@ -30,7 +30,7 @@ class InsertStmt(Stmt):
 
 @dataclasses.dataclass
 class SelectStmt(Stmt):
-    tablename: str
+    tablename: str | None
     result_columns: list[str]
 
 
@@ -129,13 +129,20 @@ class Parser:
         cols = []
         col = self.result_column()
         cols.append(col)
-        while self.cur().ttype != TokenType.FROM:
+        while self.cur().ttype == TokenType.COMMA:
             self.expect(TokenType.COMMA)
             col = self.result_column()
             cols.append(col)
+        
+        tablename = None
+        if self.cur().ttype == TokenType.FROM:
+            self.expect(TokenType.FROM)
+            tablename = self.expect_ident()
 
-        self.expect(TokenType.FROM)
-        tablename = self.expect_ident()
+        where = None
+        if self.cur().ttype == TokenType.WHERE:
+            pass
+
         return SelectStmt(tablename, cols)
 
     def sql_stmt(self) -> Stmt:

@@ -3,18 +3,21 @@ import dataclasses
 
 
 class TokenType(enum.Enum):
+    # keywords
     CREATE = enum.auto()
     TABLE = enum.auto()
-    IDENTIFIER = enum.auto()
-    LCOLON = enum.auto()
-    RCOLON = enum.auto()
     INSERT = enum.auto()
     INTO = enum.auto()
     VALUES = enum.auto()
-    STRING_LITERAL = enum.auto()
     SELECT = enum.auto()
     FROM = enum.auto()
-
+    WHERE = enum.auto()
+    
+    IDENTIFIER = enum.auto()
+    STRING_LITERAL = enum.auto()
+    
+    LCOLON = enum.auto()
+    RCOLON = enum.auto() 
     STAR = enum.auto()
     COMMA = enum.auto()
     SEMICOLON = enum.auto()
@@ -27,6 +30,7 @@ keywords = {
     "VALUES": TokenType.VALUES,
     "SELECT": TokenType.SELECT,
     "FROM": TokenType.FROM,
+    "WHERE": TokenType.WHERE,
 }
 
 @dataclasses.dataclass
