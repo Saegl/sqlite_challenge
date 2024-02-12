@@ -50,18 +50,22 @@ class Engine:
         self.tables = {}
 
     def expr(self, node: parser.Expr, context: dict[str, Value]) -> Value:
-        if isinstance(node, parser.ConstString):
-            return TextValue(node.val)
-        elif isinstance(node, parser.ConstInt):
-            return IntegerValue(node.val)
-        elif isinstance(node, parser.BindParameter):
-            return context[node.ident]
-        elif isinstance(node, parser.BinaryOperator):
-            lhs = self.expr(node.lhs, context)
-            rhs = self.expr(node.rhs, context)
-            return IntegerValue(lhs.val == rhs.val)
-        else:
-            raise EngineError(f"Not implemented expr {node}")
+        match node:
+            case parser.ConstString(val):
+                return TextValue(val)
+            case parser.ConstInt(val):
+                return IntegerValue(val)
+            case parser.BindParameter(val):
+                return context[node.ident]
+            case parser.BinaryOperator(lhs, _, rhs):
+                return IntegerValue(self.expr(lhs, context).val == self.expr(rhs, context).val)
+            case parser.Between(expr, lower, upper):
+                exprval = self.expr(expr, context).val
+                lowerval = self.expr(lower, context).val
+                upperval = self.expr(upper, context).val
+                return IntegerValue(lowerval <= exprval <= upperval)
+            case _:
+                raise EngineError(f"Not implemented expr {node}")
 
     def createstmt(self, stmt: parser.CreateStmt):
         table = Table([cd.column_name for cd in stmt.columndefs])

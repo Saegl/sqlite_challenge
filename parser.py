@@ -28,6 +28,12 @@ class BinaryOperator(Expr):
     rhs: Expr
 
 @dataclasses.dataclass
+class Between(Expr):
+    expr: Expr
+    lower: Expr
+    upper: Expr
+
+@dataclasses.dataclass
 class ColumnDef:
     column_name: str
     type_name: str
@@ -112,7 +118,7 @@ class Parser:
         elif self.cur().ttype == TT.IDENTIFIER:
             return self.bind_parameter()
         else:
-            raise ParserError
+            raise ParserError(str(self.cur().ttype))
 
     def cmp_expr(self) -> Expr:
         lhs = self.value()
@@ -120,6 +126,13 @@ class Parser:
             self.skip()
             rhs = self.value()
             return BinaryOperator(lhs, TT.EQUAL, rhs)
+        if self.cur().ttype == TT.BETWEEN:
+            self.skip()
+            lower = self.value()
+            self.expect(TT.AND)
+            upper = self.value()
+            return Between(lhs, lower, upper)
+        
         return lhs
 
     def expr(self) -> Expr:

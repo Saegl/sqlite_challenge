@@ -37,9 +37,11 @@ def test1():
     sm.same("SELECT firstname, secondname FROM user")
     sm.same("SELECT *, firstname, * FROM user")
 
+
 def test2():
     sm = SameOutput()
     sm.same("CREATE TABLE user(name TEXT, age INTEGER)")
     sm.same("INSERT INTO user VALUES ('alisher', 22), ('john', 21)")
     sm.same("SELECT name FROM user WHERE age = 22")
+    sm.same("SELECT name FROM user WHERE age BETWEEN 18 AND 21")
 
