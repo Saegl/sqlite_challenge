@@ -13,6 +13,7 @@ class TokenType(enum.Enum):
     FROM = enum.auto()
     WHERE = enum.auto()
     BETWEEN = enum.auto()
+    LIKE = enum.auto()
     OR = enum.auto()
     AND = enum.auto()
     NOT = enum.auto()
@@ -51,6 +52,7 @@ keywords = {
     "FROM": TokenType.FROM,
     "WHERE": TokenType.WHERE,
     "BETWEEN": TT.BETWEEN,
+    "LIKE": TT.LIKE,
     "OR": TT.OR,
     "AND": TT.AND,
     "NOT": TT.NOT,

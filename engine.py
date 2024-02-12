@@ -1,4 +1,5 @@
 import abc
+import re
 from dataclasses import dataclass
 from typing import Any
 import parser
@@ -65,6 +66,12 @@ class Engine:
                     return IntegerValue(elementval not in containerval)
                 else:
                     return IntegerValue(elementval in containerval)
+            case parser.LikeExpr(element, pattern, isnot):
+                elementval = self.expr(element, context).val
+                patternval = self.expr(pattern, context).val
+                modified_pattern = patternval.replace('%', '.*').replace('_', '.')
+                regex_pattern = re.compile(modified_pattern, re.IGNORECASE)
+                return IntegerValue(regex_pattern.fullmatch(elementval) is not None)
             case parser.UnaryOperator(expr, op):
                 expr = self.expr(expr, context)
                 if op == TT.NOT:

@@ -59,3 +59,10 @@ def test_nums():
     sm.same("SELECT x FROM nums WHERE x IN (5, 6, 7)")
     sm.same("SELECT x FROM nums WHERE x NOT IN (0, 1)")
 
+def test_strings():
+    sm = SameOutput()
+    sm.same("CREATE TABLE s(t TEXT)")
+    sm.same("INSERT INTO s VALUES ('ali'), ('alisher'), ('Alisher'), ('john'), ('aset')")
+    sm.same("SELECT * FROM s WHERE t == 'ali'")
+    sm.same("SELECT * FROM s WHERE t LIKE 'ali%'")
+    sm.same("SELECT * FROM s WHERE t IN ('ali', 'aset')")

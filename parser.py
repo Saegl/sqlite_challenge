@@ -28,6 +28,12 @@ class InExpr(Expr):
     isnot: bool
 
 @dataclasses.dataclass
+class LikeExpr(Expr):
+    element: Expr
+    pattern: Expr
+    isnot: bool
+
+@dataclasses.dataclass
 class UnaryOperator(Expr):
     expr: Expr
     op: TT
@@ -175,6 +181,11 @@ class Parser:
 
             self.expect(TT.RCOLON)
             return InExpr(lhs, exprs, isnot)
+
+        if self.cur().ttype == TT.LIKE:
+            self.skip()
+            pattern = self.expr()
+            return LikeExpr(lhs, pattern, isnot)
         
         return lhs
 
