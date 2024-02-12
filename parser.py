@@ -128,10 +128,11 @@ class Parser:
 
     def cmp_expr(self) -> Expr:
         lhs = self.value()
-        if self.cur().ttype == TT.EQUAL:
+        if self.cur().ttype in (TT.EQUAL, TT.NOT_EQUAL):
+            op = self.cur().ttype
             self.skip()
             rhs = self.value()
-            return BinaryOperator(lhs, TT.EQUAL, rhs)
+            return BinaryOperator(lhs, op, rhs)
         if self.cur().ttype in (TT.NOT, TT.BETWEEN):
             isnot = False
             if self.cur().ttype == TT.NOT:

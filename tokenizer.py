@@ -26,7 +26,10 @@ class TokenType(enum.Enum):
     STAR = enum.auto()
     COMMA = enum.auto()
     SEMICOLON = enum.auto()
+
+    # cmp
     EQUAL = enum.auto()
+    NOT_EQUAL = enum.auto()
 
 TT = TokenType
 
@@ -107,6 +110,22 @@ def tokenize(source: str) -> list[Token]:
             i += 1
             if source[i] == '=':
                 i += 1
+        elif c == '<':
+            i += 1
+            if source[i] == '>':
+                i += 1
+                ans.append(Token(TT.NOT_EQUAL, ""))
+                continue
+            
+            raise TokenizerError
+        elif c == '!':
+            i += 1
+            if source[i] == '=':
+                i += 1
+                ans.append(Token(TT.NOT_EQUAL, ""))
+                continue
+
+            raise TokenizerError
         else:
             raise TokenizerError(f"unexpected symbol {c} at {i}")
 
