@@ -79,11 +79,10 @@ def tokenize(source: str) -> list[Token]:
                 i += 1
             sseq = source[l:i]
             ans.append(Token(TokenType.INT_LITERAL, sseq))
-        elif c in ['"', "'"]:
-            quote_type = c
+        elif c == "'":
             i += 1
             l = i
-            while i < len(source) and source[i] != quote_type:
+            while i < len(source) and source[i] != "'":
                 i += 1
             inner = source[l:i]
             i += 1
