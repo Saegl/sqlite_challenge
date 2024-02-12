@@ -22,6 +22,10 @@ class TokenType(enum.Enum):
     STAR = enum.auto()
     COMMA = enum.auto()
     SEMICOLON = enum.auto()
+    EQUAL = enum.auto()
+
+TT = TokenType
+
 
 keywords = {
     "CREATE": TokenType.CREATE,
@@ -90,6 +94,9 @@ def tokenize(source: str) -> list[Token]:
             i += 1
         elif c == ',':
             ans.append(Token(TokenType.COMMA, ""))
+            i += 1
+        elif c == '=':
+            ans.append(Token(TokenType.EQUAL, ""))
             i += 1
         else:
             raise TokenizerError(f"unexpected symbol {c} at {i}")

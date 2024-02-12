@@ -49,6 +49,20 @@ class Engine:
     def __init__(self):
         self.tables = {}
 
+    def expr(self, node: parser.Expr, context: dict[str, Value]) -> Value:
+        if isinstance(node, parser.ConstString):
+            return TextValue(node.val)
+        elif isinstance(node, parser.ConstInt):
+            return IntegerValue(node.val)
+        elif isinstance(node, parser.BindParameter):
+            return context[node.ident]
+        elif isinstance(node, parser.BinaryOperator):
+            lhs = self.expr(node.lhs, context)
+            rhs = self.expr(node.rhs, context)
+            return IntegerValue(lhs.val == rhs.val)
+        else:
+            raise EngineError(f"Not implemented expr {node}")
+
     def createstmt(self, stmt: parser.CreateStmt):
         table = Table([cd.column_name for cd in stmt.columndefs])
         self.tables[stmt.tablename] = table
@@ -82,9 +96,19 @@ class Engine:
                 column_ids.append(table.columns.index(rcol))
         
         output: list[Any] = []
-        for row in self.tables[stmt.tablename].data:
-            outputrow = tuple(row[c_id].val for c_id in column_ids)
-            output.append(outputrow)
+        for row in table.data:
+            context = {}
+            for k, v in zip(table.columns, row):
+                context[k] = v
+
+            if stmt.where:
+                incl = self.expr(stmt.where, context).val == 1
+                if incl:
+                    outputrow = tuple(row[c_id].val for c_id in column_ids)
+                    output.append(outputrow)
+            else:
+                outputrow = tuple(row[c_id].val for c_id in column_ids)
+                output.append(outputrow)
         return output
 
     def execute(self, cmd: str) -> list:

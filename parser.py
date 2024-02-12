@@ -1,6 +1,6 @@
 import abc
 import dataclasses
-from tokenizer import Token, TokenType, tokenize
+from tokenizer import Token, TokenType, TT, tokenize
 
 
 class Stmt(abc.ABC):
@@ -16,6 +16,16 @@ class ConstString(Expr):
 @dataclasses.dataclass
 class ConstInt(Expr):
     val: int
+
+@dataclasses.dataclass
+class BindParameter(Expr):
+    ident: str
+
+@dataclasses.dataclass
+class BinaryOperator(Expr):
+    lhs: Expr
+    op: TT
+    rhs: Expr
 
 @dataclasses.dataclass
 class ColumnDef:
@@ -42,6 +52,7 @@ class InsertStmt(Stmt):
 class SelectStmt(Stmt):
     tablename: str | None
     result_columns: list[str]
+    where: Expr | None
 
 
 class ParserError(Exception):
@@ -76,7 +87,7 @@ class Parser:
         self.expect(TokenType.STRING_LITERAL)
         return tok.val
 
-    def expr(self) -> Expr:
+    def literal_value(self) -> Expr:
         tok = self.cur()
         if tok.ttype == TokenType.STRING_LITERAL:
             self.skip()
@@ -85,7 +96,34 @@ class Parser:
             self.skip()
             return ConstInt(int(tok.val))
         else:
-            raise ParserError("Wrong expression")
+            raise ParserError(f"Wrong literal, got {tok.ttype}")
+
+    def bind_parameter(self) -> BindParameter:
+        tok = self.cur()
+        if tok.ttype == TT.IDENTIFIER:
+            self.skip()
+            return BindParameter(tok.val)
+        else:
+            raise ParserError
+
+    def value(self) -> Expr:
+        if self.cur().ttype in (TT.STRING_LITERAL, TT.INT_LITERAL):
+            return self.literal_value()
+        elif self.cur().ttype == TT.IDENTIFIER:
+            return self.bind_parameter()
+        else:
+            raise ParserError
+
+    def cmp_expr(self) -> Expr:
+        lhs = self.value()
+        if self.cur().ttype == TT.EQUAL:
+            self.skip()
+            rhs = self.value()
+            return BinaryOperator(lhs, TT.EQUAL, rhs)
+        return lhs
+
+    def expr(self) -> Expr:
+        return self.cmp_expr()
 
     def row(self) -> Row:
         self.expect(TokenType.LCOLON)
@@ -166,9 +204,10 @@ class Parser:
 
         where = None
         if self.cur().ttype == TokenType.WHERE:
-            pass
+            self.expect(TokenType.WHERE)
+            where = self.expr()
 
-        return SelectStmt(tablename, cols)
+        return SelectStmt(tablename, cols, where)
 
     def sql_stmt(self) -> Stmt:
         stmt: Stmt
@@ -231,7 +270,7 @@ def test_select():
     line = 'SELECT * FROM user;'
     stmts = parse(line)
     expected_stmts = [
-        SelectStmt("user", ["*"])
+        SelectStmt("user", ["*"], None)
     ]
     assert stmts == expected_stmts
 
@@ -239,7 +278,7 @@ def test_select_cols():
     line = 'SELECT title, director FROM movies;'
     stmts = parse(line)
     expected_stmts = [
-        SelectStmt("movies", ["title", "director"])
+        SelectStmt("movies", ["title", "director"], None)
     ]
     assert stmts == expected_stmts
 
