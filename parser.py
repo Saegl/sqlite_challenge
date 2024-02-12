@@ -6,6 +6,16 @@ from tokenizer import Token, TokenType, tokenize
 class Stmt(abc.ABC):
     pass
 
+class Expr(abc.ABC):
+    pass
+
+@dataclasses.dataclass
+class ConstString(Expr):
+    val: str
+
+@dataclasses.dataclass
+class ConstInt(Expr):
+    val: int
 
 @dataclasses.dataclass
 class ColumnDef:
@@ -14,7 +24,7 @@ class ColumnDef:
 
 @dataclasses.dataclass
 class Row:
-    exprs: list[str]
+    exprs: list[Expr]
 
 @dataclasses.dataclass
 class CreateStmt(Stmt):
@@ -46,9 +56,13 @@ class Parser:
     def cur(self) -> Token:
         return self.tokens[self.i]
 
+    def skip(self):
+        "Skip one token"
+        self.i += 1
+
     def expect(self, ttype: TokenType):
         if self.cur().ttype == ttype:
-            self.i += 1
+            self.skip()
         else:
             raise ParserError(f"Expected {ttype} got {self.cur().ttype} at {self.i}")
 
@@ -62,16 +76,27 @@ class Parser:
         self.expect(TokenType.STRING_LITERAL)
         return tok.val
 
+    def expr(self) -> Expr:
+        tok = self.cur()
+        if tok.ttype == TokenType.STRING_LITERAL:
+            self.skip()
+            return ConstString(tok.val)
+        elif tok.ttype == TokenType.INT_LITERAL:
+            self.skip()
+            return ConstInt(int(tok.val))
+        else:
+            raise ParserError("Wrong expression")
+
     def row(self) -> Row:
         self.expect(TokenType.LCOLON)
 
         exprs = []
-        expr = self.expect_string()
+        expr = self.expr()
         exprs.append(expr)
 
         while self.cur().ttype != TokenType.RCOLON:
             self.expect(TokenType.COMMA)
-            expr = self.expect_string()
+            expr = self.expr()
             exprs.append(expr)
 
         self.expect(TokenType.RCOLON)
@@ -146,6 +171,7 @@ class Parser:
         return SelectStmt(tablename, cols)
 
     def sql_stmt(self) -> Stmt:
+        stmt: Stmt
         if self.cur().ttype == TokenType.CREATE:
             stmt = self.create_table_stmt()
         elif self.cur().ttype == TokenType.INSERT:
@@ -194,8 +220,8 @@ def test_insert():
         InsertStmt(
             "user",
             [
-                Row(["alisher", "zhubanyshev"]),
-                Row(["john", "doe"]),
+                Row([ConstString("alisher"), ConstString("zhubanyshev")]),
+                Row([ConstString("john"), ConstString("doe")]),
             ]
         )
     ]

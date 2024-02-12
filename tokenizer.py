@@ -15,6 +15,7 @@ class TokenType(enum.Enum):
     
     IDENTIFIER = enum.auto()
     STRING_LITERAL = enum.auto()
+    INT_LITERAL = enum.auto()
     
     LCOLON = enum.auto()
     RCOLON = enum.auto() 
@@ -60,6 +61,12 @@ def tokenize(source: str) -> list[Token]:
                 ans.append(Token(keywords[sseq.upper()], ""))
             else:
                 ans.append(Token(TokenType.IDENTIFIER, sseq))
+        elif c.isdigit():
+            l = i
+            while i < len(source) and source[i].isdigit():
+                i += 1
+            sseq = source[l:i]
+            ans.append(Token(TokenType.INT_LITERAL, sseq))
         elif c in ['"', "'"]:
             quote_type = c
             i += 1
@@ -142,6 +149,16 @@ def test_select():
         Token(TokenType.STAR, ""),
         Token(TokenType.FROM, ""),
         Token(TokenType.IDENTIFIER, "user"),
+        Token(TokenType.SEMICOLON, ""),
+    ]
+    assert tokens == expected_tokens
+
+def test_int():
+    line = 'SELECT 1;'
+    tokens = tokenize(line)
+    expected_tokens = [
+        Token(TokenType.SELECT, ""),
+        Token(TokenType.INT_LITERAL, "1"),
         Token(TokenType.SEMICOLON, ""),
     ]
     assert tokens == expected_tokens
