@@ -85,9 +85,9 @@ def tokenize(source: str) -> list[Token]:
         if c in (' ', '\n', '\t', '\r'):
             i += 1
             continue
-        elif c.isalpha():
+        elif c.isalpha() or c == '_':
             l = i
-            while i < len(source) and source[i].isalpha():
+            while i < len(source) and (source[i].isalpha() or source[i] == '_'):
                 i += 1
             sseq = source[l:i]
             if sseq.upper() in keywords:
