@@ -193,7 +193,7 @@ def test_lesson1():
     sm.same('SELECT title, year FROM movies;')
     sm.same('SELECT * FROM movies;')
 
-@pytest.mark.xfail
+
 def test_lesson2():
     sm = SameOutput()    
     sm.same(CREATE_MOVIES)
@@ -215,7 +215,7 @@ def test_lesson2():
         WHERE year <= 2003; 
     ''')
  
-@pytest.mark.xfail
+
 def test_lesson3():
     sm = SameOutput()
     sm.same(CREATE_MOVIES)
