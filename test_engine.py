@@ -183,7 +183,6 @@ INSERT_EMPLOYEES = '''
         ('Artist',  	'Oliver P.',    NULL,   0);
 '''
 
-@pytest.mark.xfail
 def test_lesson1():
     sm = SameOutput()
     sm.same(CREATE_MOVIES)

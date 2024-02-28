@@ -34,10 +34,12 @@ class BlobValue(Value):
 
 
 class Table:
+    tablename: str
     columns: list[str]
     data: list[list[Value]]
     
-    def __init__(self, columns: list[str]):
+    def __init__(self, tablename: str, columns: list[str]):
+        self.tablename = tablename
         self.columns = columns
         self.data = []
     
@@ -49,7 +51,16 @@ class Engine:
     tables: dict[str, Table]
 
     def __init__(self):
-        self.tables = {}
+        self._tables = {}
+
+    def inserttable(self, table: Table) -> None:
+        self._tables[table.tablename.lower()] = table
+
+    def gettable(self, tablename: str) -> Table:
+        return self._tables[tablename.lower()]
+
+    def hastable(self, tablename: str) -> bool:
+        return tablename.lower() in self._tables
 
     def expr(self, node: parser.Expr, context: dict[str, Value]) -> Value:
         match node:
@@ -113,11 +124,11 @@ class Engine:
                 raise EngineError(f"Not implemented expr {node}")
 
     def createstmt(self, stmt: parser.CreateStmt):
-        table = Table([cd.column_name for cd in stmt.columndefs])
-        self.tables[stmt.tablename] = table
+        table = Table(stmt.tablename, [cd.column_name for cd in stmt.columndefs])
+        self.inserttable(table)
 
     def insertstmt(self, stmt: parser.InsertStmt):
-        table = self.tables[stmt.tablename]
+        table = self.gettable(stmt.tablename)
         for row in stmt.values:
             row_values: list[Value] = []
             for expr in row.exprs:
@@ -131,11 +142,14 @@ class Engine:
             table.insert_row(row_values)
 
     def selectstmt(self, stmt: parser.SelectStmt):
-        if stmt.tablename not in self.tables:
+        if stmt.tablename is not None and not self.hastable(stmt.tablename):
             print(f"OperationalError (SQLITE_ERROR): no such table: {stmt.tablename}")
             return
+        
+        if stmt.tablename is None:
+            raise EngineError("What to do if there is no tablename?")
 
-        table = self.tables[stmt.tablename]
+        table = self.gettable(stmt.tablename)
 
         column_ids: list[int] = []
         for rcol in stmt.result_columns:
