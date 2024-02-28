@@ -161,6 +161,10 @@ class Engine:
 
         if stmt.distinct:
             output = list(set(output))
+
+        if stmt.orderby:
+            output = sorted(output)
+
         return output
 
     def execute(self, cmd: str) -> list:

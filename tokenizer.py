@@ -20,6 +20,8 @@ class TokenType(enum.Enum):
     IN = enum.auto()
     DISTINCT = enum.auto()
     ALL = enum.auto()
+    ORDER = enum.auto()
+    BY = enum.auto()
     
     IDENTIFIER = enum.auto()
     STRING_LITERAL = enum.auto()
@@ -61,6 +63,8 @@ keywords = {
     "IN": TT.IN,
     "DISTINCT": TT.DISTINCT,
     "ALL": TT.ALL,
+    "ORDER": TT.ORDER,
+    "BY": TT.BY,
 }
 
 @dataclasses.dataclass

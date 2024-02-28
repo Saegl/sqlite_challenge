@@ -78,6 +78,7 @@ class SelectStmt(Stmt):
     result_columns: list[str]
     where: Expr | None
     distinct: bool
+    orderby: Expr | None
 
 
 class ParserError(Exception):
@@ -308,7 +309,13 @@ class Parser:
             self.expect(TokenType.WHERE)
             where = self.expr()
 
-        return SelectStmt(tablename, cols, where, distinct)
+        orderby = None
+        if self.cur().ttype == TT.ORDER:
+            self.expect(TT.ORDER)
+            self.expect(TT.BY)
+            orderby = self.expr()
+
+        return SelectStmt(tablename, cols, where, distinct, orderby)
 
     def sql_stmt(self) -> Stmt:
         stmt: Stmt
