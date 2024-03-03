@@ -1,35 +1,43 @@
 import abc
 import dataclasses
-from tokenizer import Token, TokenType, TT, tokenize
+
+from tokenizer import TT, Token, TokenType, tokenize
 
 
-class Stmt(abc.ABC):
+class Stmt(abc.ABC):  # noqa: B024
     pass
 
-class Expr(abc.ABC):
+
+class Expr(abc.ABC):  # noqa: B024
     pass
+
 
 @dataclasses.dataclass
 class OrderingTerm:
     ident: str
     asc: bool
 
+
 @dataclasses.dataclass
 class Limit:
     limitval: int
     offset: int
 
+
 @dataclasses.dataclass
 class ConstString(Expr):
     val: str
+
 
 @dataclasses.dataclass
 class ConstInt(Expr):
     val: int
 
+
 @dataclasses.dataclass
 class BindParameter(Expr):
     ident: str
+
 
 @dataclasses.dataclass
 class InExpr(Expr):
@@ -37,22 +45,26 @@ class InExpr(Expr):
     container: list[Expr]
     isnot: bool
 
+
 @dataclasses.dataclass
 class LikeExpr(Expr):
     element: Expr
     pattern: Expr
     isnot: bool
 
+
 @dataclasses.dataclass
 class UnaryOperator(Expr):
     expr: Expr
     op: TT
+
 
 @dataclasses.dataclass
 class BinaryOperator(Expr):
     lhs: Expr
     op: TT
     rhs: Expr
+
 
 @dataclasses.dataclass
 class Between(Expr):
@@ -61,14 +73,17 @@ class Between(Expr):
     upper: Expr
     isnot: bool
 
+
 @dataclasses.dataclass
 class ColumnDef:
     column_name: str
     type_name: str
 
+
 @dataclasses.dataclass
 class Row:
     exprs: list[Expr]
+
 
 @dataclasses.dataclass
 class CreateStmt(Stmt):
@@ -104,11 +119,11 @@ class Parser:
     def cur(self) -> Token:
         return self.tokens[self.i]
 
-    def skip(self):
+    def skip(self) -> None:
         "Skip one token"
         self.i += 1
 
-    def expect(self, ttype: TokenType):
+    def expect(self, ttype: TokenType) -> None:
         if self.cur().ttype == ttype:
             self.skip()
         else:
@@ -163,7 +178,7 @@ class Parser:
             self.skip()
             rhs = self.value()
             return BinaryOperator(lhs, op, rhs)
-        
+
         return lhs
 
     def cmp_expr(self) -> Expr:
@@ -178,7 +193,7 @@ class Parser:
         if self.cur().ttype == TT.NOT:
             isnot = True
             self.skip()
-        
+
         if self.cur().ttype == TT.BETWEEN:
             self.skip()
             lower = self.order_expr()
@@ -204,7 +219,7 @@ class Parser:
             self.skip()
             pattern = self.expr()
             return LikeExpr(lhs, pattern, isnot)
-        
+
         return lhs
 
     def not_expr(self) -> Expr:
@@ -250,7 +265,6 @@ class Parser:
         self.expect(TokenType.RCOLON)
         return Row(exprs)
 
-
     def create_table_stmt(self) -> CreateStmt:
         self.expect(TokenType.CREATE)
         self.expect(TokenType.TABLE)
@@ -285,7 +299,7 @@ class Parser:
         while self.cur().ttype == TokenType.COMMA:
             self.expect(TokenType.COMMA)
             row = self.row()
-            values.append(row) 
+            values.append(row)
 
         return InsertStmt(tablename, values)
 
@@ -314,7 +328,7 @@ class Parser:
             self.expect(TokenType.COMMA)
             col = self.result_column()
             cols.append(col)
-        
+
         tablename = None
         if self.cur().ttype == TokenType.FROM:
             self.expect(TokenType.FROM)
@@ -332,7 +346,7 @@ class Parser:
 
             bind_param = self.bind_parameter()
             orderingterm = OrderingTerm(bind_param.ident, False)
-            
+
             if self.cur().ttype == TT.ASC:
                 orderingterm.asc = True
                 self.skip()
@@ -384,7 +398,7 @@ def parse(source: str) -> list[Stmt]:
     return Parser(source).parse()
 
 
-def test_create():
+def test_create() -> None:
     line = "CREATE TABLE user (firstname TEXT, secondname TEXT);"
     stmts = parse(line)
     expected_stmts = [
@@ -393,12 +407,13 @@ def test_create():
             [
                 ColumnDef("firstname", "TEXT"),
                 ColumnDef("secondname", "TEXT"),
-            ]
+            ],
         )
     ]
     assert stmts == expected_stmts
 
-def test_insert():
+
+def test_insert() -> None:
     line = 'INSERT INTO user VALUES ("alisher", "zhubanyshev"), ("john", "doe");'
     stmts = parse(line)
     expected_stmts = [
@@ -407,24 +422,21 @@ def test_insert():
             [
                 Row([ConstString("alisher"), ConstString("zhubanyshev")]),
                 Row([ConstString("john"), ConstString("doe")]),
-            ]
+            ],
         )
     ]
     assert stmts == expected_stmts
 
-def test_select():
-    line = 'SELECT * FROM user;'
+
+def test_select() -> None:
+    line = "SELECT * FROM user;"
     stmts = parse(line)
-    expected_stmts = [
-        SelectStmt("user", ["*"], None)
-    ]
+    expected_stmts = [SelectStmt("user", ["*"], None)]
     assert stmts == expected_stmts
 
-def test_select_cols():
-    line = 'SELECT title, director FROM movies;'
-    stmts = parse(line)
-    expected_stmts = [
-        SelectStmt("movies", ["title", "director"], None)
-    ]
-    assert stmts == expected_stmts
 
+def test_select_cols() -> None:
+    line = "SELECT title, director FROM movies;"
+    stmts = parse(line)
+    expected_stmts = [SelectStmt("movies", ["title", "director"], None)]
+    assert stmts == expected_stmts

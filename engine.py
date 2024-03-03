@@ -1,32 +1,39 @@
 import abc
+import parser
 import re
 from dataclasses import dataclass
 from typing import Any
-import parser
+
 from tokenizer import TT
 
 
 class EngineError(Exception):
     pass
 
+
 class Value(abc.ABC):
     val: Any
+
 
 @dataclass
 class NullValue(Value):
     val: None
 
+
 @dataclass
 class IntegerValue(Value):
     val: int
+
 
 @dataclass
 class RealValue(Value):
     val: float
 
+
 @dataclass
 class TextValue(Value):
     val: str
+
 
 @dataclass
 class BlobValue(Value):
@@ -37,20 +44,20 @@ class Table:
     tablename: str
     columns: list[str]
     data: list[list[Value]]
-    
+
     def __init__(self, tablename: str, columns: list[str]):
         self.tablename = tablename
         self.columns = columns
         self.data = []
-    
-    def insert_row(self, row: list[Value]):
+
+    def insert_row(self, row: list[Value]) -> None:
         self.data.append(row)
 
 
 class Engine:
-    tables: dict[str, Table]
+    _tables: dict[str, Table]
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._tables = {}
 
     def inserttable(self, table: Table) -> None:
@@ -80,7 +87,7 @@ class Engine:
             case parser.LikeExpr(element, pattern, isnot):
                 elementval = self.expr(element, context).val
                 patternval = self.expr(pattern, context).val
-                modified_pattern = patternval.replace('%', '.*').replace('_', '.')
+                modified_pattern = patternval.replace("%", ".*").replace("_", ".")
                 regex_pattern = re.compile(modified_pattern, re.IGNORECASE)
                 return IntegerValue(regex_pattern.fullmatch(elementval) is not None)
             case parser.UnaryOperator(expr, op):
@@ -123,11 +130,11 @@ class Engine:
             case _:
                 raise EngineError(f"Not implemented expr {node}")
 
-    def createstmt(self, stmt: parser.CreateStmt):
+    def createstmt(self, stmt: parser.CreateStmt) -> None:
         table = Table(stmt.tablename, [cd.column_name for cd in stmt.columndefs])
         self.inserttable(table)
 
-    def insertstmt(self, stmt: parser.InsertStmt):
+    def insertstmt(self, stmt: parser.InsertStmt) -> None:
         table = self.gettable(stmt.tablename)
         for row in stmt.values:
             row_values: list[Value] = []
@@ -141,11 +148,11 @@ class Engine:
 
             table.insert_row(row_values)
 
-    def selectstmt(self, stmt: parser.SelectStmt):
+    def selectstmt(self, stmt: parser.SelectStmt) -> Any:
         if stmt.tablename is not None and not self.hastable(stmt.tablename):
             print(f"OperationalError (SQLITE_ERROR): no such table: {stmt.tablename}")
-            return
-        
+            return None
+
         if stmt.tablename is None:
             raise EngineError("What to do if there is no tablename?")
 
@@ -153,11 +160,11 @@ class Engine:
 
         column_ids: list[int] = []
         for rcol in stmt.result_columns:
-            if rcol == '*':
+            if rcol == "*":
                 column_ids.extend(range(len(table.columns)))
             else:
                 column_ids.append(table.columns.index(rcol))
-        
+
         output: list[Any] = []
         for row in table.data:
             context = {}
@@ -176,19 +183,19 @@ class Engine:
         if stmt.distinct:
             output = list(set(output))
 
-        if stmt.orderingterm: 
+        if stmt.orderingterm:
             output = sorted(output)
 
         if stmt.limit:
             offset = stmt.limit.offset
             limit = stmt.limit.limitval
 
-            output = output[offset:offset + limit]
+            output = output[offset : offset + limit]
 
         return output
 
-    def execute(self, cmd: str) -> list:
-        cmd = cmd + ';'
+    def execute(self, cmd: str) -> Any:
+        cmd = cmd + ";"
         for stmt in parser.parse(cmd):
             stmtname = stmt.__class__.__name__.lower()
             method = getattr(self, stmtname)
@@ -199,14 +206,14 @@ class Engine:
                 return output
         return []
 
-    def eval(self, line):
+    def eval(self, line: str) -> None:
         for stmt in parser.parse(line):
             stmtname = stmt.__class__.__name__.lower()
             method = getattr(self, stmtname)
             method(stmt)
 
 
-def main():
+def main() -> None:
     engine = Engine()
 
     while True:
@@ -219,6 +226,6 @@ def main():
 
         engine.eval(line)
 
+
 if __name__ == "__main__":
     main()
-

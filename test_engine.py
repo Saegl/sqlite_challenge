@@ -1,4 +1,6 @@
 import sqlite3
+from typing import Any
+
 import pytest
 
 from engine import Engine
@@ -11,26 +13,27 @@ class SqliteWrapper:
     So this wrapper commits on each executes, useful for testing,
     but this is not proper use of `sqlite3`
     """
-    def __init__(self):
+
+    def __init__(self) -> None:
         self.con = sqlite3.connect(":memory:")
         self.cur = self.con.cursor()
 
-    def execute(self, text: str):
+    def execute(self, text: str) -> Any:
         res = self.cur.execute(text)
         self.con.commit()
         return res.fetchall()
 
 
 class SameOutput:
-    def __init__(self):
+    def __init__(self) -> None:
         self.sw = SqliteWrapper()
         self.e = Engine()
 
-    def same(self, cmd: str):
+    def same(self, cmd: str) -> None:
         assert self.sw.execute(cmd) == self.e.execute(cmd)
 
 
-def test1():
+def test1() -> None:
     sm = SameOutput()
     sm.same("CREATE TABLE user(firstname TEXT, secondname TEXT)")
     sm.same("INSERT INTO user VALUES ('alisher', 'zhuban'), ('john', 'doe')")
@@ -39,7 +42,7 @@ def test1():
     sm.same("SELECT *, firstname, * FROM user")
 
 
-def test2():
+def test2() -> None:
     sm = SameOutput()
     sm.same("CREATE TABLE user(name TEXT, age INTEGER)")
     sm.same("INSERT INTO user VALUES ('alisher', 22), ('john', 21)")
@@ -47,7 +50,8 @@ def test2():
     sm.same("SELECT name FROM user WHERE age BETWEEN 18 AND 21")
     sm.same("SELECT name FROM user WHERE age NOT BETWEEN 18 AND 21")
 
-def test_nums():
+
+def test_nums() -> None:
     sm = SameOutput()
     sm.same("CREATE TABLE nums(x INTEGER)")
     sm.same("INSERT INTO nums VALUES (1), (2), (3), (4), (5)")
@@ -60,15 +64,19 @@ def test_nums():
     sm.same("SELECT x FROM nums WHERE x IN (5, 6, 7)")
     sm.same("SELECT x FROM nums WHERE x NOT IN (0, 1)")
 
-def test_strings():
+
+def test_strings() -> None:
     sm = SameOutput()
     sm.same("CREATE TABLE s(t TEXT)")
-    sm.same("INSERT INTO s VALUES ('ali'), ('alisher'), ('Alisher'), ('john'), ('aset')")
+    sm.same(
+        "INSERT INTO s VALUES ('ali'), ('alisher'), ('Alisher'), ('john'), ('aset')"
+    )
     sm.same("SELECT * FROM s WHERE t == 'ali'")
     sm.same("SELECT * FROM s WHERE t LIKE 'ali%'")
     sm.same("SELECT * FROM s WHERE t IN ('ali', 'aset')")
 
-def test_duplicates():
+
+def test_duplicates() -> None:
     sm = SameOutput()
     sm.same("CREATE TABLE nums(x INTEGER)")
     sm.same("INSERT INTO nums VALUES (1), (1), (1)")
@@ -76,7 +84,8 @@ def test_duplicates():
     sm.same("SELECT ALL x FROM nums WHERE x == 1")
     sm.same("SELECT DISTINCT x FROM nums WHERE x == 1")
 
-def test_order():
+
+def test_order() -> None:
     sm = SameOutput()
     sm.same("CREATE TABLE nums(x INTEGER)")
     sm.same("INSERT INTO nums VALUES (5), (3), (4), (1), (2)")
@@ -126,11 +135,11 @@ INSERT_NORTH = """
         ('Chicago', 'United States', 2718782, 41.878114, -87.629798);
 """
 
-CREATE_BOX_OFFICE = '''
+CREATE_BOX_OFFICE = """
     CREATE TABLE Boxoffice (movie_id, rating, domestic_sales, international_sales);
-'''
+"""
 
-INSERT_BOX_OFFICE = '''
+INSERT_BOX_OFFICE = """
     INSERT INTO Boxoffice VALUES
         (5,  8.2,	380843261,	555900000),
         (14, 7.4,	268492764,	475066843),
@@ -146,25 +155,25 @@ INSERT_BOX_OFFICE = '''
         (4,  8.1,	289916256,	272900000),
         (2,  7.2,	162798565,	200600000),
         (13, 7.2,	237283207,	301700000);
-'''
+"""
 
-CREATE_BUILDINGS = '''
+CREATE_BUILDINGS = """
     CREATE TABLE Buildings (building_name, capacity);
-'''
+"""
 
-INSERT_BUILDINGS = '''
+INSERT_BUILDINGS = """
     INSERT INTO Buildings VALUES
         ('1e', 24),
         ('1w', 32),
         ('2e', 16),
         ('2w', 20);
-'''
+"""
 
-CREATE_EMPLOYEES = '''
+CREATE_EMPLOYEES = """
     CREATE TABLE Employees (role TEXT, name TEXT, building TEXT, years_employed INT);
-'''
+"""
 
-INSERT_EMPLOYEES = '''
+INSERT_EMPLOYEES = """
     INSERT INTO Employees VALUES
         ('Engineer',	'Becky A.',	    '1e',	4),
         ('Engineer',	'Dan B.',	    '1e',	2),
@@ -181,273 +190,279 @@ INSERT_EMPLOYEES = '''
         ('Manager',	    'Daria O.',	    '2w',	6),
         ('Engineer',	'Yancy I.',     NULL,   0),
         ('Artist',  	'Oliver P.',    NULL,   0);
-'''
+"""
 
-def test_lesson1():
+
+def test_lesson1() -> None:
     sm = SameOutput()
     sm.same(CREATE_MOVIES)
     sm.same(INSERT_MOVIES)
-    sm.same('SELECT title FROM movies;')
-    sm.same('SELECT director FROM movies;')
-    sm.same('SELECT title, director FROM movies;')
-    sm.same('SELECT title, year FROM movies;')
-    sm.same('SELECT * FROM movies;')
+    sm.same("SELECT title FROM movies;")
+    sm.same("SELECT director FROM movies;")
+    sm.same("SELECT title, director FROM movies;")
+    sm.same("SELECT title, year FROM movies;")
+    sm.same("SELECT * FROM movies;")
 
 
-def test_lesson2():
-    sm = SameOutput()    
+def test_lesson2() -> None:
+    sm = SameOutput()
     sm.same(CREATE_MOVIES)
     sm.same(INSERT_MOVIES)
-    sm.same('''
+    sm.same("""
         SELECT id, title FROM movies 
         WHERE id = 6;
-    ''')
-    sm.same('''
+    """)
+    sm.same("""
         SELECT title, year FROM movies
         WHERE year BETWEEN 2000 AND 2010;
-    ''')
-    sm.same('''
+    """)
+    sm.same("""
         SELECT title, year FROM movies
         WHERE year < 2000 OR year > 2010;
-    ''')
-    sm.same('''
+    """)
+    sm.same("""
         SELECT title, year FROM movies
         WHERE year <= 2003; 
-    ''')
- 
+    """)
 
-def test_lesson3():
+
+def test_lesson3() -> None:
     sm = SameOutput()
     sm.same(CREATE_MOVIES)
     sm.same(INSERT_MOVIES)
-    sm.same('''
+    sm.same("""
         SELECT title, director FROM movies 
         WHERE title LIKE 'Toy Story%';
-    ''')
-    sm.same('''
+    """)
+    sm.same("""
         SELECT title, director FROM movies 
         WHERE director = 'John Lasseter';
-    ''')
-    sm.same('''
+    """)
+    sm.same("""
         SELECT title, director FROM movies 
         WHERE director != 'John Lasseter';
-    ''')
-    sm.same('''
+    """)
+    sm.same("""
         SELECT * FROM movies 
         WHERE title LIKE 'WALL-_';
-    ''')
+    """)
 
 
 @pytest.mark.xfail
-def test_lesson4():
+def test_lesson4() -> None:
     sm = SameOutput()
     sm.same(CREATE_MOVIES)
     sm.same(INSERT_MOVIES)
-    sm.same('''
+    sm.same("""
         SELECT DISTINCT director FROM movies
         ORDER BY director ASC;
-    ''')
-    sm.same('''
+    """)
+    sm.same("""
         SELECT title, year FROM movies
         ORDER BY year DESC
         LIMIT 4;
-    ''')
-    sm.same('''
+    """)
+    sm.same("""
         SELECT title FROM movies
         ORDER BY title ASC
         LIMIT 5;
-    ''')
-    sm.same('''
+    """)
+    sm.same("""
         SELECT title FROM movies
         ORDER BY title ASC
         LIMIT 5 OFFSET 5;
-    ''')
+    """)
 
 
 @pytest.mark.xfail
-def test_lesson5():
+def test_lesson5() -> None:
     sm = SameOutput()
     sm.same(CREATE_NORTH)
     sm.same(INSERT_NORTH)
-    sm.same('''
+    sm.same("""
         SELECT city, population FROM north_american_cities
         WHERE country = 'Canada';
-    ''')
-    sm.same('''
+    """)
+    sm.same("""
         SELECT city, latitude FROM north_american_cities
         WHERE country = 'United States'
         ORDER BY latitude DESC;
-    ''')
-    sm.same('''
+    """)
+    sm.same("""
         SELECT city, longitude FROM north_american_cities
         WHERE longitude < -87.629798
         ORDER BY longitude ASC;
-    ''')
-    sm.same('''
+    """)
+    sm.same("""
         SELECT city, population FROM north_american_cities
         WHERE country LIKE 'Mexico'
         ORDER BY population DESC
         LIMIT 2;
-    ''')
-    sm.same('''
+    """)
+    sm.same("""
         SELECT city, population FROM north_american_cities
         WHERE country LIKE 'United States'
         ORDER BY population DESC
         LIMIT 2 OFFSET 2;
-    ''')
+    """)
 
- 
+
 @pytest.mark.xfail
-def test_lesson6():
+def test_lesson6() -> None:
     sm = SameOutput()
     sm.same(CREATE_MOVIES)
     sm.same(INSERT_MOVIES)
     sm.same(CREATE_BOX_OFFICE)
     sm.same(INSERT_BOX_OFFICE)
-    sm.same('''
+    sm.same("""
         SELECT title, domestic_sales, international_sales 
         FROM movies
         JOIN boxoffice
             ON movies.id = boxoffice.movie_id;
-    ''')
-    sm.same('''
+    """)
+    sm.same("""
         SELECT title, domestic_sales, international_sales
         FROM movies
         JOIN boxoffice
             ON movies.id = boxoffice.movie_id
         WHERE international_sales > domestic_sales;
-    ''')
-    sm.same('''
+    """)
+    sm.same("""
         SELECT title, rating
         FROM movies
         JOIN boxoffice
             ON movies.id = boxoffice.movie_id
         ORDER BY rating DESC;
-    ''')
+    """)
 
- 
+
 @pytest.mark.xfail
-def test_lesson7():
+def test_lesson7() -> None:
     sm = SameOutput()
     sm.same(CREATE_BUILDINGS)
     sm.same(INSERT_BUILDINGS)
     sm.same(CREATE_EMPLOYEES)
     sm.same(INSERT_EMPLOYEES)
-    sm.same('SELECT DISTINCT building FROM employees;')
-    sm.same('SELECT * FROM buildings;')
-    sm.same('''
+    sm.same("SELECT DISTINCT building FROM employees;")
+    sm.same("SELECT * FROM buildings;")
+    sm.same("""
         SELECT DISTINCT building_name, role 
         FROM buildings 
         LEFT JOIN employees
             ON building_name = building;
-    ''')
+    """)
 
- 
+
 @pytest.mark.xfail
-def test_lesson8():
+def test_lesson8() -> None:
     sm = SameOutput()
     sm.same(CREATE_BUILDINGS)
     sm.same(INSERT_BUILDINGS)
     sm.same(CREATE_EMPLOYEES)
     sm.same(INSERT_EMPLOYEES)
-    sm.same('''
+    sm.same("""
         SELECT name, role FROM employees
         WHERE building IS NULL;
-    ''')
-    sm.same('''
+    """)
+    sm.same("""
         SELECT DISTINCT building_name
         FROM buildings 
         LEFT JOIN employees
             ON building_name = building
         WHERE role IS NULL;
-    ''')
- 
+    """)
+
+
 @pytest.mark.xfail
-def test_lesson9():
+def test_lesson9() -> None:
     sm = SameOutput()
     sm.same(CREATE_MOVIES)
     sm.same(INSERT_MOVIES)
     sm.same(CREATE_BOX_OFFICE)
     sm.same(INSERT_BOX_OFFICE)
-    sm.same('''
+    sm.same("""
         SELECT title, (domestic_sales + international_sales) / 1000000 AS gross_sales_millions
         FROM movies
         JOIN boxoffice
             ON movies.id = boxoffice.movie_id;
-    ''')
-    sm.same('''
+    """)
+    sm.same("""
         SELECT title, rating * 10 AS rating_percent
         FROM movies
         JOIN boxoffice
             ON movies.id = boxoffice.movie_id;
-    ''')
-    sm.same('''
+    """)
+    sm.same("""
         SELECT title, year
         FROM movies
         WHERE year % 2 = 0;
-    ''')
- 
+    """)
+
+
 @pytest.mark.xfail
-def test_lesson10():
+def test_lesson10() -> None:
     sm = SameOutput()
     sm.same(CREATE_EMPLOYEES)
     sm.same(INSERT_EMPLOYEES)
-    sm.same('SELECT MAX(years_employed) as Max_years_employed FROM employees;')
-    sm.same('''
+    sm.same("SELECT MAX(years_employed) as Max_years_employed FROM employees;")
+    sm.same("""
         SELECT role, AVG(years_employed) as Average_years_employed
         FROM employees
         GROUP BY role;
-    ''')
-    sm.same('''
+    """)
+    sm.same("""
         SELECT building, SUM(years_employed) as Total_years_employed
         FROM employees
         GROUP BY building;
-    ''')
- 
+    """)
+
+
 @pytest.mark.xfail
-def test_lesson11():
+def test_lesson11() -> None:
     sm = SameOutput()
     sm.same(CREATE_EMPLOYEES)
     sm.same(INSERT_EMPLOYEES)
-    sm.same('''
+    sm.same("""
         SELECT role, COUNT(*) as Number_of_artists
         FROM employees
         WHERE role = 'Artist';
-    ''')
-    sm.same('''
+    """)
+    sm.same("""
     SELECT role, COUNT(*)
         FROM employees
         GROUP BY role;
-    ''')
-    sm.same('''
+    """)
+    sm.same("""
         SELECT role, SUM(years_employed)
         FROM employees
         GROUP BY role
         HAVING role = 'Engineer';
-    ''')
- 
+    """)
+
+
 @pytest.mark.xfail
-def test_lesson12():
+def test_lesson12() -> None:
     sm = SameOutput()
     sm.same(CREATE_MOVIES)
     sm.same(INSERT_MOVIES)
     sm.same(CREATE_BOX_OFFICE)
     sm.same(INSERT_BOX_OFFICE)
-    sm.same('''
+    sm.same("""
         SELECT director, COUNT(id) as Num_movies_directed
         FROM movies
         GROUP BY director;
-    ''')
-    sm.same('''
+    """)
+    sm.same("""
         SELECT director, SUM(domestic_sales + international_sales) as Cumulative_sales_from_all_movies
         FROM movies
         INNER JOIN boxoffice
             ON movies.id = boxoffice.movie_id
         GROUP BY director;
-    ''')
- 
+    """)
+
+
 @pytest.mark.xfail
-def test_lesson13():
+def test_lesson13() -> None:
     sm = SameOutput()
     sm.same(CREATE_MOVIES)
     sm.same(INSERT_MOVIES)
@@ -457,73 +472,77 @@ def test_lesson13():
     sm.same("SELECT * FROM movies;")
     sm.same("INSERT INTO boxoffice VALUES (4, 8.7, 340000000, 270000000);")
     sm.same("SELECT * FROM boxoffice;")
- 
+
+
 @pytest.mark.xfail
-def test_lesson14():
+def test_lesson14() -> None:
     sm = SameOutput()
     sm.same(CREATE_MOVIES)
     sm.same(INSERT_MOVIES)
-    sm.same('''
+    sm.same("""
         UPDATE movies
         SET director = 'John Lasseter'
         WHERE id = 2;
-    ''')
+    """)
     sm.same("SELECT * FROM movies WHERE director = 'John Lasseter';")
-    sm.same('''
+    sm.same("""
         UPDATE movies
         SET year = 1999
         WHERE id = 3;
-    ''')
+    """)
     sm.same("SELECT * FROM movies WHERE id = 3;")
-    sm.same('''
+    sm.same("""
         UPDATE movies
         SET title = 'Toy Story 3', director = 'Lee Unkrich'
         WHERE id = 11;
-    ''')
- 
+    """)
+
+
 @pytest.mark.xfail
-def test_lesson15():
+def test_lesson15() -> None:
     sm = SameOutput()
     sm.same(CREATE_MOVIES)
     sm.same(INSERT_MOVIES)
-    sm.same('DELETE FROM movies where year < 2005;')
+    sm.same("DELETE FROM movies where year < 2005;")
     sm.same("SELECT * FROM movies;")
-    sm.same("DELETE FROM movies where director = 'Andrew Stanton'");
- 
+    sm.same("DELETE FROM movies where director = 'Andrew Stanton'")
+
+
 @pytest.mark.xfail
-def test_lesson16():
+def test_lesson16() -> None:
     sm = SameOutput()
-    sm.same('''
+    sm.same("""
         CREATE TABLE Database (
             Name TEXT,
             Version FLOAT,
             Download_count INTEGER
-    );''')
+    );""")
     sm.same("SELECT * FROM Database;")
- 
+
+
 @pytest.mark.xfail
-def test_lesson17():
+def test_lesson17() -> None:
     sm = SameOutput()
     sm.same(CREATE_MOVIES)
     sm.same(INSERT_MOVIES)
-    sm.same('''
+    sm.same("""
         ALTER TABLE Movies
         ADD COLUMN Aspect_ratio FLOAT DEFAULT 2.39;
-    ''')
+    """)
     sm.same("SELECT * FROM movies;")
-    sm.same('''
+    sm.same("""
         ALTER TABLE Movies
         ADD COLUMN Language TEXT DEFAULT 'English';
-    ''')
+    """)
     sm.same("SELECT * FROM movies;")
- 
+
+
 @pytest.mark.xfail
-def test_lesson18():
+def test_lesson18() -> None:
     sm = SameOutput()
     sm.same(CREATE_MOVIES)
     sm.same(INSERT_MOVIES)
     sm.same(CREATE_BOX_OFFICE)
     sm.same(INSERT_BOX_OFFICE)
-    sm.same('DROP TABLE Movies;')
-    sm.same('DROP TABLE BoxOffice;')
-
+    sm.same("DROP TABLE Movies;")
+    sm.same("DROP TABLE BoxOffice;")

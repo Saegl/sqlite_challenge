@@ -1,5 +1,5 @@
-import enum
 import dataclasses
+import enum
 
 
 class TokenType(enum.Enum):
@@ -26,13 +26,13 @@ class TokenType(enum.Enum):
     DESC = enum.auto()
     LIMIT = enum.auto()
     OFFSET = enum.auto()
-    
+
     IDENTIFIER = enum.auto()
     STRING_LITERAL = enum.auto()
     INT_LITERAL = enum.auto()
-    
+
     LCOLON = enum.auto()
-    RCOLON = enum.auto() 
+    RCOLON = enum.auto()
     STAR = enum.auto()
     COMMA = enum.auto()
     SEMICOLON = enum.auto()
@@ -46,6 +46,7 @@ class TokenType(enum.Enum):
     LE = enum.auto()
     GT = enum.auto()
     GE = enum.auto()
+
 
 TT = TokenType
 
@@ -75,6 +76,7 @@ keywords = {
     "OFFSET": TT.OFFSET,
 }
 
+
 @dataclasses.dataclass
 class Token:
     ttype: TokenType
@@ -90,12 +92,12 @@ def tokenize(source: str) -> list[Token]:
     ans = []
     while i < len(source):
         c = source[i]
-        if c in (' ', '\n', '\t', '\r'):
+        if c in (" ", "\n", "\t", "\r"):
             i += 1
             continue
-        elif c.isalpha() or c == '_':
+        elif c.isalpha() or c == "_":
             l = i
-            while i < len(source) and (source[i].isalpha() or source[i] == '_'):
+            while i < len(source) and (source[i].isalpha() or source[i] == "_"):
                 i += 1
             sseq = source[l:i]
             if sseq.upper() in keywords:
@@ -116,49 +118,49 @@ def tokenize(source: str) -> list[Token]:
             inner = source[l:i]
             i += 1
             ans.append(Token(TokenType.STRING_LITERAL, inner))
-        elif c == '*':
+        elif c == "*":
             ans.append(Token(TokenType.STAR, ""))
             i += 1
-        elif c == '(':
+        elif c == "(":
             ans.append(Token(TokenType.LCOLON, ""))
             i += 1
-        elif c == ')':
+        elif c == ")":
             ans.append(Token(TokenType.RCOLON, ""))
             i += 1
-        elif c == ';':
+        elif c == ";":
             ans.append(Token(TokenType.SEMICOLON, ""))
             i += 1
-        elif c == ',':
+        elif c == ",":
             ans.append(Token(TokenType.COMMA, ""))
             i += 1
-        elif c == '=':
+        elif c == "=":
             ans.append(Token(TokenType.EQUAL, ""))
             i += 1
-            if source[i] == '=':
+            if source[i] == "=":
                 i += 1
-        elif c == '<':
+        elif c == "<":
             i += 1
-            if source[i] == '>':
+            if source[i] == ">":
                 i += 1
                 ans.append(Token(TT.NOT_EQUAL, ""))
                 continue
-            elif source[i] == '=':
+            elif source[i] == "=":
                 i += 1
                 ans.append(Token(TT.LE, ""))
                 continue
-            
+
             ans.append(Token(TT.LT, ""))
-        elif c == '>':
+        elif c == ">":
             i += 1
-            if source[i] == '=':
+            if source[i] == "=":
                 i += 1
                 ans.append(Token(TT.GE, ""))
                 continue
 
             ans.append(Token(TT.GT, ""))
-        elif c == '!':
+        elif c == "!":
             i += 1
-            if source[i] == '=':
+            if source[i] == "=":
                 i += 1
                 ans.append(Token(TT.NOT_EQUAL, ""))
                 continue
@@ -170,7 +172,7 @@ def tokenize(source: str) -> list[Token]:
     return ans
 
 
-def test_create():
+def test_create() -> None:
     line = "CREATE TABLE user (firstname TEXT, secondname TEXT);"
     tokens = tokenize(line)
     expected_tokens = [
@@ -186,11 +188,11 @@ def test_create():
         Token(TokenType.RCOLON, ""),
         Token(TokenType.SEMICOLON, ""),
     ]
-    
+
     assert tokens == expected_tokens
 
 
-def test_insert():
+def test_insert() -> None:
     line = 'INSERT INTO user VALUES ("alisher", "zhubanyshev"), ("john", "doe");'
     tokens = tokenize(line)
     expected_tokens = [
@@ -214,8 +216,8 @@ def test_insert():
     assert tokens == expected_tokens
 
 
-def test_select():
-    line = 'SELECT * FROM user;'
+def test_select() -> None:
+    line = "SELECT * FROM user;"
     tokens = tokenize(line)
     expected_tokens = [
         Token(TokenType.SELECT, ""),
@@ -226,8 +228,9 @@ def test_select():
     ]
     assert tokens == expected_tokens
 
-def test_int():
-    line = 'SELECT 1;'
+
+def test_int() -> None:
+    line = "SELECT 1;"
     tokens = tokenize(line)
     expected_tokens = [
         Token(TokenType.SELECT, ""),
@@ -235,4 +238,3 @@ def test_int():
         Token(TokenType.SEMICOLON, ""),
     ]
     assert tokens == expected_tokens
-
