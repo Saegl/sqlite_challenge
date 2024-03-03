@@ -10,6 +10,16 @@ class Expr(abc.ABC):
     pass
 
 @dataclasses.dataclass
+class OrderingTerm:
+    ident: str
+    asc: bool
+
+@dataclasses.dataclass
+class Limit:
+    limitval: int
+    offset: int
+
+@dataclasses.dataclass
 class ConstString(Expr):
     val: str
 
@@ -78,7 +88,8 @@ class SelectStmt(Stmt):
     result_columns: list[str]
     where: Expr | None
     distinct: bool
-    orderby: Expr | None
+    orderingterm: OrderingTerm | None
+    limit: Limit | None
 
 
 class ParserError(Exception):
@@ -112,6 +123,11 @@ class Parser:
         tok = self.cur()
         self.expect(TokenType.STRING_LITERAL)
         return tok.val
+
+    def int_value(self) -> ConstInt:
+        tok = self.cur()
+        self.expect(TT.INT_LITERAL)
+        return ConstInt(int(tok.val))
 
     def literal_value(self) -> Expr:
         tok = self.cur()
@@ -309,13 +325,35 @@ class Parser:
             self.expect(TokenType.WHERE)
             where = self.expr()
 
-        orderby = None
+        orderingterm = None
         if self.cur().ttype == TT.ORDER:
             self.expect(TT.ORDER)
             self.expect(TT.BY)
-            orderby = self.expr()
 
-        return SelectStmt(tablename, cols, where, distinct, orderby)
+            bind_param = self.bind_parameter()
+            orderingterm = OrderingTerm(bind_param.ident, False)
+            
+            if self.cur().ttype == TT.ASC:
+                orderingterm.asc = True
+                self.skip()
+
+            if self.cur().ttype == TT.DESC:
+                orderingterm.asc = False
+                self.skip()
+
+        limit = None
+        if self.cur().ttype == TT.LIMIT:
+            self.expect(TT.LIMIT)
+            limitval = self.int_value()
+            offsetval = 0
+
+            if self.cur().ttype == TT.OFFSET:
+                self.skip()
+                offsetval = self.int_value().val
+
+            limit = Limit(limitval.val, offsetval)
+
+        return SelectStmt(tablename, cols, where, distinct, orderingterm, limit)
 
     def sql_stmt(self) -> Stmt:
         stmt: Stmt

@@ -176,8 +176,14 @@ class Engine:
         if stmt.distinct:
             output = list(set(output))
 
-        if stmt.orderby:
+        if stmt.orderingterm: 
             output = sorted(output)
+
+        if stmt.limit:
+            offset = stmt.limit.offset
+            limit = stmt.limit.limitval
+
+            output = output[offset:offset + limit]
 
         return output
 

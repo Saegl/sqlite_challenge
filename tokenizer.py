@@ -22,6 +22,10 @@ class TokenType(enum.Enum):
     ALL = enum.auto()
     ORDER = enum.auto()
     BY = enum.auto()
+    ASC = enum.auto()
+    DESC = enum.auto()
+    LIMIT = enum.auto()
+    OFFSET = enum.auto()
     
     IDENTIFIER = enum.auto()
     STRING_LITERAL = enum.auto()
@@ -65,6 +69,10 @@ keywords = {
     "ALL": TT.ALL,
     "ORDER": TT.ORDER,
     "BY": TT.BY,
+    "ASC": TT.ASC,
+    "DESC": TT.DESC,
+    "LIMIT": TT.LIMIT,
+    "OFFSET": TT.OFFSET,
 }
 
 @dataclasses.dataclass
